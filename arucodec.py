@@ -4,7 +4,7 @@ import cv2.aruco as aruco
 import matplotlib.pyplot as plt
 
 
-img = np.zeros((512,512,3), np.uint8)
+img = np.zeros((650,500,3), np.uint8)
 cap = cv2.VideoCapture(1)
 cxold=0
 cyold=0
