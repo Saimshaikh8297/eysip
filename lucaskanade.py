@@ -1,9 +1,10 @@
 import numpy as np
 import cv2
-cap = cv2.VideoCapture(1)
+cap = cv2.VideoCapture(0)
+img1 = np.zeros((1280,720,3), np.uint8)
 # params for ShiTomasi corner detection
-feature_params = dict( maxCorners = 2,
-                       qualityLevel = 0.5,
+feature_params = dict( maxCorners = 100,
+                       qualityLevel = 0.3,
                        minDistance = 7,
                        blockSize = 7 )
 # Parameters for lucas kanade optical flow
@@ -28,12 +29,26 @@ while(1):
     good_old = p0[st==1]
     # draw the tracks
     for i,(new,old) in enumerate(zip(good_new,good_old)):
-        a,b = new.ravel()
-        c,d = old.ravel()
-        mask = cv2.line(mask, (a,b),(c,d), color[i].tolist(), 2)
-        frame = cv2.circle(frame,(a,b),5,color[i].tolist(),-1)
+        if(i==0):
+            a, b = new.ravel()
+            print("A,B"+ str(i))
+            print((a, b))
+            c, d = old.ravel()
+            print("C,D")
+            print((c, d))
+            mask = cv2.line(mask, (a, b), (c, d), color[i].tolist(), 2)
+            frame = cv2.circle(frame,(a,b),5,color[i].tolist(),-1)
+            img1 = cv2.line(mask, (a, b), (c, d), color[i].tolist(), 2)
+            frame = cv2.circle(frame, (a, b), 5, color[i].tolist(), -1)
+        # a,b = new.ravel()
+        # print((a,b))
+        # c,d = old.ravel()
+        # print((c, d))
+        # mask = cv2.line(mask, (a,b),(c,d), color[i].tolist(), 2)
+        # frame = cv2.circle(frame,(a,b),5,color[i].tolist(),-1)
     img = cv2.add(frame,mask)
     cv2.imshow('frame',img)
+    cv2.imwrite("plotlkt.jpg",img1)
     k = cv2.waitKey(30) & 0xff
     if k == 27:
         break
