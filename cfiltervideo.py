@@ -46,9 +46,18 @@ while(1):
 
 
 
-    print(contours)
+    # print(contours)
+    # cropped = resized[155:582, 26:139]
+    # cv2.imshow('framecrop', cropped)
     cv2.drawContours(resized, [contours], -1, (0, 255, 0), 3)
     cv2.imshow('frame', resized)
+    mask = np.zeros(resized.shape, dtype=np.uint8)
+    roi_corners = np.array([[(582, 136), (491, 5), (155, 26), (9,162)]], dtype=np.int32)
+    channel_count = resized.shape[2]
+    ignore_mask_color = (255,) * channel_count
+    cv2.fillPoly(mask, roi_corners, ignore_mask_color)
+    masked_image = cv2.bitwise_and(resized, mask)
+    cv2.imshow("crop",masked_image)
     # cv2.imshow('frame1', blurred)
     # cv2.imshow('frame2', edged)
     # cv2.imshow('frame3', thresh)
