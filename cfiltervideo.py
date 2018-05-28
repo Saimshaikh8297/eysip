@@ -39,7 +39,7 @@ while(1):
             if len(approx) == 4:
                 screenCnt = approx
                 break
-        print(screenCnt)
+        # print(screenCnt)
         contours=screenCnt
         firstframe=True
 
@@ -51,18 +51,27 @@ while(1):
     # cv2.imshow('framecrop', cropped)
     cv2.drawContours(resized, [contours], -1, (0, 255, 0), 3)
     cv2.imshow('frame', resized)
+    x1 = contours[0][0][0]
+    y1 = contours[0][0][1]
+    print(x1)
+    x2 = contours[1][0][0]
+    y2 = contours[1][0][1]
+    x3 = contours[2][0][0]
+    y3 = contours[2][0][1]
+    x4 = contours[3][0][0]
+    y4 = contours[3][0][1]
     mask = np.zeros(resized.shape, dtype=np.uint8)
-    roi_corners = np.array([[(582, 136), (491, 5), (155, 26), (9,162)]], dtype=np.int32)
+    roi_corners = np.array([[(x1, y1), (x2, y2), (x3, y3), (x4,y4)]], dtype=np.int32)
     channel_count = resized.shape[2]
     ignore_mask_color = (255,) * channel_count
     cv2.fillPoly(mask, roi_corners, ignore_mask_color)
     masked_image = cv2.bitwise_and(resized, mask)
     cv2.imshow("crop",masked_image)
-    # cv2.imshow('frame1', blurred)
-    # cv2.imshow('frame2', edged)
-    # cv2.imshow('frame3', thresh)
-    # # cv2.imshow('frame4', blurredopen)
-    # cv2.imshow('frame5', blurredclose)
+    cv2.imshow('frame1', blurred)
+    cv2.imshow('frame2', edged)
+    cv2.imshow('frame3', thresh)
+    # cv2.imshow('frame4', blurredopen)
+    cv2.imshow('frame5', blurredclose)
     k = cv2.waitKey(30) & 0xff
     if k == 27:
         break
