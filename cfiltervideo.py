@@ -53,25 +53,38 @@ while(1):
     cv2.imshow('frame', resized)
     x1 = contours[0][0][0]
     y1 = contours[0][0][1]
-    print(x1)
     x2 = contours[1][0][0]
     y2 = contours[1][0][1]
     x3 = contours[2][0][0]
     y3 = contours[2][0][1]
     x4 = contours[3][0][0]
     y4 = contours[3][0][1]
+    print("HII")
+    print((x1, y1))
+    print((x2, y2))
+    print((x3, y3))
+    print((x4, y4))
+
     mask = np.zeros(resized.shape, dtype=np.uint8)
     roi_corners = np.array([[(x1, y1), (x2, y2), (x3, y3), (x4,y4)]], dtype=np.int32)
     channel_count = resized.shape[2]
     ignore_mask_color = (255,) * channel_count
     cv2.fillPoly(mask, roi_corners, ignore_mask_color)
     masked_image = cv2.bitwise_and(resized, mask)
+
+    pts1 = np.float32([(x3, y3), (x2, y2), (x4, y4), (x1,y1)])
+    pts2 = np.float32([[0, 0], [500, 0], [0, 500], [500, 500]])
+    M = cv2.getPerspectiveTransform(pts1, pts2)
+    dst = cv2.warpPerspective(masked_image, M, (500, 500))
+    dstblur = cv2.GaussianBlur(dst, (5, 5), 0)
+    dst = cv2.addWeighted(dstblur,1.5,dst,-0.5,0)
+
     cv2.imshow("crop",masked_image)
     cv2.imshow('frame1', blurred)
     cv2.imshow('frame2', edged)
     cv2.imshow('frame3', thresh)
     # cv2.imshow('frame4', blurredopen)
-    cv2.imshow('frame5', blurredclose)
+    cv2.imshow('frame5', dst)
     k = cv2.waitKey(30) & 0xff
     if k == 27:
         break
