@@ -4,7 +4,11 @@ import numpy as np
 
 # image = cv2.imread("test.jpg")
 firstframe=False
+
+opframe=(500,500)
 cap = cv2.VideoCapture("vid5.mp4")
+fourcc = cv2.VideoWriter_fourcc(*'DIVX')  # 'x264' doesn't work
+out = cv2.VideoWriter('001_output.mp4',fourcc, 29.0, opframe, True)
 while(1):
     ret, image = cap.read()
     resized = imutils.resize(image, width=600)
@@ -78,8 +82,13 @@ while(1):
     dst = cv2.warpPerspective(masked_image, M, (500, 500))
     dstblur = cv2.GaussianBlur(dst, (5, 5), 0)
     dst = cv2.addWeighted(dstblur,1.5,dst,-0.5,0)
+    print(dst.shape)
+    cv2.imshow("crop",dst)
 
-    cv2.imshow("crop",masked_image)
+    if ret == True:
+        # writeframe = cv2.flip(dst, 0)
+        out.write(dst)
+
     cv2.imshow('frame1', blurred)
     cv2.imshow('frame2', edged)
     cv2.imshow('frame3', thresh)
@@ -91,3 +100,4 @@ while(1):
 
 cv2.destroyAllWindows()
 cap.release()
+out.release()
