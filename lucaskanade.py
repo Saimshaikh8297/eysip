@@ -1,6 +1,6 @@
 import numpy as np
 import cv2
-cap = cv2.VideoCapture("vid3.mp4")
+cap = cv2.VideoCapture("001_output.mp4")
 img1 = np.zeros((1280,720,3), np.uint8)
 # params for ShiTomasi corner detection
 feature_params = dict( maxCorners = 100,
@@ -49,15 +49,19 @@ while(1):
         if(abs(a-c)>0.05 and abs(b-d)>0.05):
             l.append((a,b))
             l1.append((c,d))
-    (a, b) = l[0]
-    print((a, b))
-    (c, d) = l1[0]
-    print((c,d))
-    img1 = cv2.line(mask, (a, b), (c, d), color[i].tolist(), 2)
-    frame = cv2.circle(frame, (a, b), 5, color[i].tolist(), -1)
-    l1.clear()
-    l.clear()
-    img = cv2.add(frame,mask)
+    if  l:
+        (a, b) = l[0]
+        print((a, b))
+        (c, d) = l1[0]
+        print((c, d))
+        img1 = cv2.line(mask, (a, b), (c, d), color[i].tolist(), 2)
+        frame = cv2.circle(frame, (a, b), 5, color[i].tolist(), -1)
+        l1.clear()
+        l.clear()
+        img = cv2.add(frame, mask)
+    else:
+        print("List is empty")
+
     cv2.imshow('frame',img)
     cv2.imwrite("plotlkt.jpg",img1)
     k = cv2.waitKey(30) & 0xff
