@@ -1,17 +1,21 @@
 import numpy as np
 import cv2
 import cv2.aruco as aruco
-import matplotlib.pyplot as plt
 
-opframe=(1280,720)
-cap = cv2.VideoCapture("samplevideo.mp4")
-fourcc = cv2.VideoWriter_fourcc(*'DIVX')  # 'x264' doesn't work
-out = cv2.VideoWriter('tstoutput.mp4',fourcc, 29.0, opframe, True)
+cap = cv2.VideoCapture("test6.mp4") # Capture video from camera
+
+# Get the width and height of frame
+width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH) + 0.5)
+height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT) + 0.5)
+
+# Define the codec and create VideoWriter object
+fourcc = cv2.VideoWriter_fourcc(*'mp4v') # Be sure to use the lower case
+out = cv2.VideoWriter('output.mp4', fourcc, 20.0, (width, height))
 count = 0
-while (True):
+flag=True
+while(cap.isOpened()):
     ret, frame = cap.read()
-    # opframe = frame.shape
-    # opframe = opframe[:2]
+
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     tl = 0
     tr = 0
@@ -43,15 +47,24 @@ while (True):
         brx = a[0][2][0]
         bry = a[0][2][1]
 
+    if ret == True and (tlx, tly, trix, triy, blx,bly,brx,bry)==(0,0,0,0,0,0,0,0) :
+        out.write(frame)
 
-    if ret == True:
-        # writeframe = cv2.flip(dst, 0)
-        out.write(gray)
+        cv2.imshow('frame',frame)
+        flag=True
 
-    if cv2.waitKey(1) & 0xFF == ord('q'):
+        if (cv2.waitKey(1) & 0xFF) == ord('q'): # Hit `q` to exit
+            break
+    else:
+        if (flag == True):
+            count+=1
+            flag=False
+
+    if (cv2.waitKey(1) & 0xFF) == ord('q'):  # Hit `q` to exit
         break
 
+# Release everything if job is finished
+out.release()
 cap.release()
 cv2.destroyAllWindows()
-out.release()
 print(count)
