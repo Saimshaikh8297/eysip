@@ -113,8 +113,8 @@ def filter_top_of_robot(frame):
         print("no contour found bro")
 
     #cv2.imshow('res', res)
-    cv2.imshow("plot", img)
-
+    cv2.imshow("Plot", img)
+    cv2.waitKey(1)
 
 
 def warping(image,contours):
@@ -146,14 +146,15 @@ def warping(image,contours):
     pts2 = np.float32([[0, 0], [500, 0], [0, 500], [500, 500]])
     M = cv2.getPerspectiveTransform(pts1, pts2)
     dst = cv2.warpPerspective(masked_image, M, (500, 500))
-    # cv2.imshow("dst", dst)
+    cv2.imshow("Warped", dst)
+    cv2.waitKey(1)
 
     return dst
 
 
 def deleteframes(team_id,file_name,contours,flag = True, count = 0):
 
-    name = "team_id_" + str(team_id[0]) +".png"
+    name = "team_id_" + str(team_id[0]) + ".png"
     print(name)
     cap = cv2.VideoCapture(file_name)
 
@@ -208,8 +209,8 @@ def deleteframes(team_id,file_name,contours,flag = True, count = 0):
                 count += 1
                 flag = False
 
-
-
+        cv2.imshow("Original", image)
+        cv2.waitKey(1)
 
     cap.release()
     cv2.destroyAllWindows()
