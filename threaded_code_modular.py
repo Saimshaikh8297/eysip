@@ -15,62 +15,63 @@ from evaluation import evaluation
 '''
 Scope : GLOBAL
 Function : Read the data from the csv file written by the standard file containing the results and path of the images
-
 '''
+#magenta #neon green #green #blue
+img_plot = [] # Reading the image with thick line
+img_with_circles = [] # Reading the image with circles
+
+hsv_values = [[[124,112,171],[148,193,255]],[[32,102,202],[43,163,255]],[[46,38,163],[67,170,255]],[[98,131,201],[112,164,249]]]
 perfect_values= [] # This list will be formed once in the program. It will store the values from the csv file of perfect run
+path_to_circle_image = "" #parsing through the list and giving the path of the image with circles
+path_to_thick_line = ""  #parsing through the list and giving the path of the image with thick line
+# perfect_values[0][3] = [] #parsing through the list and giving the first coordinate of perfect trajectory
+x_first = 0
+y_first = 0 # x_first & y_first store integer value of the x & y coordinates of the first pixel of perfect trajectory
+result_dic = [] # Each result's dictionary will be appended in this list
+th =[] # The threads formed will be appended in this list
 
-with open("/Users/siddharth/Desktop/EYSIP/NEW VIDS & RESULTS/results_perfect.csv", 'r') as csvfile: #Opening the csv file
-    # creating a csv reader object
-    csvreader = csv.reader(csvfile)
 
-    # extracting field names through first row
-    fields = next(csvreader)
+def mainplot(csvpath,folderpath,hsvtop,hsvphysical):
+    global perfect_values,path_to_circle_image,path_to_thick_line,x_first,y_first,img_plot,img_with_circles
+    with open(csvpath, 'r') as csvfile:  # Opening the csv file
+        # creating a csv reader object
+        csvreader = csv.reader(csvfile)
 
-    # extracting each data row one by one
-    for row in csvreader:
-        perfect_values.append(row)
+        # extracting field names through first row
+        fields = next(csvreader)
 
-#print(perfect_values)
-path_to_circle_image = perfect_values[0][1] #parsing through the list and giving the path of the image with circles
-path_to_thick_line = perfect_values[0][2]  #parsing through the list and giving the path of the image with thick line
-perfect_values[0][3] = ast.literal_eval(perfect_values[0][3]) #parsing through the list and giving the first coordinate of perfect trajectory
-(x_first, y_first) = perfect_values[0][3][0] # x_first & y_first store integer value of the x & y coordinates of the first pixel of perfect trajectory
+        # extracting each data row one by one
+        for row in csvreader:
+            perfect_values.append(row)
+
+    path_to_circle_image = perfect_values[0][1]  # parsing through the list and giving the path of the image with circles
+    path_to_thick_line = perfect_values[0][2]  # parsing through the list and giving the path of the image with thick line
+    perfect_values[0][3] = ast.literal_eval(perfect_values[0][3])  # parsing through the list and giving the first coordinate of perfect trajectory
+    (x_first, y_first) = perfect_values[0][3][0]  # x_first & y_first store integer value of the x & y coor
+    img_plot = cv2.imread(path_to_thick_line)  # Reading the image with thick line
+    img_with_circles = cv2.imread(path_to_circle_image)  # Reading the image with circles
+    plotcode(folderpath,hsvtop,hsvphysical)
+    with open(csv_file_name, 'w') as csvfile:
+        # creating a csv dict writer object
+        writer = csv.DictWriter(csvfile, fieldnames=fields)
+
+        # writing headers (field names)
+        writer.writeheader()
+
+        # writing data rows
+        print(result_dic)
+        writer.writerows(result_dic)
+
+
+
+
+
 #print(path_to_thick_line)
 
 '''
 Scope : GLOBAL
 Function: To be used as reference lists in which items can be appended throughout the execution
 '''
-result_dic = [] # Each result's dictionary will be appended in this list
-th =[] # The threads formed will be appended in this list
-
-
-
-
-# flag_first = True
-# flag_cnt = True
-# self.list_white = []
-
-# pm_framecounts = []
-# total_frames = 0
-
-
-#
-# adj_x = 0
-# adj_y = 0
-
-
-
-img_plot = cv2.imread(path_to_thick_line) # Reading the image with thick line
-img_with_circles = cv2.imread(path_to_circle_image) # Reading the image with circles
-
-# flag_pm = 0
-# cap = cv2.VideoCapture(0)
-# _, frame = cap.read()
-# li_pm = []
-# pm_list = []
-
-# cnt_pm = 0
 
 
 '''
@@ -78,7 +79,7 @@ Function Name : Plotcode
 Parameters : None
 Usage : This function contains the entire code which will firstly initiate the threads
 '''
-def plotcode():
+def plotcode(folderpath,hsvtop,hsvphysical):
     print("in plotcode")
 
 
@@ -203,9 +204,9 @@ def plotcode():
             # print("I am in filter_top_of_robot")
 
             hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV) #Converting the frame to HSV
-
-            lower_red = np.array([124, 112, 171]) #Color range for Magenta
-            upper_red = np.array([148, 193, 255])
+            print(hsv_values[hsvtop][0])
+            lower_red = np.array(hsv_values[hsvtop][0]) #Color range for Magenta
+            upper_red = np.array(hsv_values[hsvtop][1])
 
             mask = cv2.inRange(hsv, lower_red, upper_red) # Applying a Mask to filter out color
             res = cv2.bitwise_and(frame, frame, mask=mask) # Doing bitwise and to subtract all other colors
@@ -245,6 +246,7 @@ def plotcode():
                 if int(x) != 0 and int(y) != 0:
                     x = x + self.adj_x
                     y = y + self.adj_y
+                    print(img_plot)
                     if img_plot[int(y),int(x),0]==255: # Check if the pixel is plotted on White Foreground or Black Background
                         self.list_white.append(1)
                     else:
@@ -309,8 +311,8 @@ def plotcode():
             # global pm_framecounts
             # global flag_cnt
             hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-            lower_red = np.array([92, 103, 191])
-            upper_red = np.array([111, 195, 255])
+            lower_red = np.array(hsv_values[hsvtop][0])
+            upper_red = np.array(hsv_values[hsvtop][1])
             mask = cv2.inRange(hsv, lower_red, upper_red)
             res = cv2.bitwise_and(frame, frame, mask=mask)
             if self.flag_pm == 0:
@@ -436,7 +438,9 @@ def plotcode():
                 if ret == True and (tlx, tly, trix, triy, blx, bly, brx, bry) != (0, 0, 0, 0, 0, 0, 0, 0):
                     flag = True
 
-                    self.physical_marker(image)
+
+                    if(hsvphysical!=None):
+                        self.physical_marker(image)
 
                     warped_frame = self.warping(image, contours)
 
@@ -464,10 +468,23 @@ def plotcode():
             # print(self.pm_framecounts)
             # print(self.cnt_pm)
             # print(fps)
-            tmarker1=self.pm_framecounts[0]/self.fps
-            tmarker2=self.pm_framecounts[1]/self.fps
-            print("Physical mARKER 1 Point "+str(tmarker1))
-            print("Physical mARKER 2 Point " + str(tmarker2))
+            if(hsvphysical==None):
+                tmarker1 = "N/A"
+                tmarker2 = "N/A"
+            else:
+                tmarker1 = self.pm_framecounts[0] / self.fps
+                tmarker2 = self.pm_framecounts[1] / self.fps
+                print("Physical mARKER 1 Point " + str(tmarker1))
+                print("Physical mARKER 2 Point " + str(tmarker2))
+
+
+            result = {'Team_ID': self.num, 'Handling Count': count,
+                      "Physical Marker 1 Time":tmarker1, "Physical Marker 2 Time":tmarker2,
+                      "Follow Accuracy":followaccuracy}
+            global result_dic
+            result_dic.append(result.copy())
+            # print(result)
+            # print(result_dic)
             cv2.imwrite(name1, self.img)
             cv2.imwrite(name2, self.circleimage)
 
@@ -482,14 +499,11 @@ def plotcode():
 
 
     if __name__ == '__main__':
-        #csv_file_name = ""
-        #global result_dic
-        print("hihihihih")
-        path = '/Users/siddharth/Desktop/EYSIP/NEW VIDS & RESULTS/videos/'
-        files = glob.glob(path + '*.mov')
-
+        path = folderpath
+        files = glob.glob(path + '*.mov' or '')
         index=0
         for i in range(0,files.__len__()):
+
 
             if i<3:
                 th.append(compute_frame(files[i],i))
@@ -498,7 +512,7 @@ def plotcode():
 
         while True:
             time.sleep(2)
-            for i in range(3):
+            for i in range(1):
                 if not(th[i].is_alive()):
                     print("thread"+str(i)+"is closed")
                     index+=1
@@ -508,4 +522,12 @@ def plotcode():
                         print("All files are in thread")
                         return
 
-plotcode()
+csv_file_name = os.path.join(os.getcwd(),'Results','results.csv')
+fields = ['Team_ID', 'Handling Count',
+                      "Physical Marker 1 Time", "Physical Marker 2 Time",
+                      "Follow Accuracy"]
+
+
+
+
+mainplot(os.path.join(os.getcwd(), "Results", "perfect_results.csv"),"C:\\Users\\Saim Shaikh\\Desktop\\Eysip\\videos\\",0,None)
