@@ -7,6 +7,7 @@ import cv2
 import csv
 import time
 
+width = 0
 img = np.zeros((500,500),dtype=np.uint8)
 img_with_circles = np.zeros((500,500),dtype=np.uint8)
 img_thick = np.zeros((500,500),dtype=np.uint8)
@@ -17,6 +18,7 @@ name_akaze = "perfect_trajectory_akaze.png"
 name_circle = "perfect_trajectory_circle.png"
 name_thick = "perfect_trajectory_thick.png"
 
+blue = (255,0,0)
 
 def evaluation():
     # load the image and convert it to grayscale
@@ -77,7 +79,7 @@ def evaluation():
     #cv2.imshow("AKAZE matching", im3akaze)
     goodakaze = np.asarray(goodakaze)
 
-    features_result.append(goodakaze.shape)
+    features_result.append(goodakaze.shape[0])
 
     # Apply ratio test on SIFT matches
     goodsift = []
@@ -88,7 +90,7 @@ def evaluation():
     im3sift = cv2.drawMatchesKnn(im1, siftkps1, im2, siftkps2, goodsift[:], None, flags=2)
     #cv2.imshow("SIFT matching", im3sift)
     goodsift = np.asarray(goodsift)
-    features_result.append(goodsift.shape)
+    features_result.append(goodsift.shape[0])
 
 
     # Apply ratio test on SURF matches
@@ -100,7 +102,7 @@ def evaluation():
     im3surf = cv2.drawMatchesKnn(im1, surfkps1, im2, surfkps2, goodsurf[:], None, flags=2)
     #cv2.imshow("SURF matching", im3surf)
     goodsurf = np.asarray(goodsurf)
-    features_result.append(goodsurf.shape)
+    features_result.append(goodsurf.shape[0])
 
 
     # Apply ratio test on ORB matches
@@ -111,7 +113,7 @@ def evaluation():
     im3orb = cv2.drawMatchesKnn(im1, orbkps1, im2, orbkps2, goodorb[:], None, flags=2)
     #cv2.imshow("ORB matching", im3orb)
     goodorb = np.asarray(goodorb)
-    features_result.append(goodorb.shape)
+    features_result.append(goodorb.shape[0])
 
 
     # Apply ratio test on BRISK matches
@@ -123,7 +125,7 @@ def evaluation():
     im3brisk = cv2.drawMatchesKnn(im1, briskkps1, im2, briskkps2, goodbrisk[:], None, flags=2)
     #cv2.imshow("BRISK matching", im3brisk)
     goodbrisk = np.asarray(goodbrisk)
-    features_result.append(goodbrisk.shape)
+    features_result.append(goodbrisk.shape[0])
 
 
     return features_result
@@ -204,7 +206,7 @@ def filter_top_of_robot(frame):
         center = (int(x), int(y))
         # coordinates.append([x,y])
         radius = int(radius)
-        cv2.circle(res, center, radius, (0, 255, 0), 2)
+        #cv2.circle(res, center, radius, (0, 255, 0), 2)
         # print("area of circle = ")
         # print((3.14)*(radius*radius))
 
@@ -216,12 +218,18 @@ def filter_top_of_robot(frame):
 
         if int(x) != 0 and int(y) != 0:
             list_circles.append((x,y))
+            #print(list_circles)
             cv2.line(img, (int(x), int(y)), (int(x), int(y)), (255, 255, 255), 1)
-            cv2.line(img_thick, (int(x), int(y)), (int(x), int(y)), (255, 255, 255), 20)
+            cv2.line(img_thick, (int(x), int(y)), (int(x), int(y)), (255, 255, 255), width)
 
     else:
         print("no contour found bro")
 
+    #cv2.imshow('Original',frame)
+    cv2.imshow("Perfect Trajectory",img)
+    cv2.imshow('Thick Trajectory ',img_thick)
+    cv2.waitKey(1)
+3
 
 def warping(image,contours):
     #print("I am in warping")
@@ -236,15 +244,103 @@ def warping(image,contours):
     x4 = contours[3][0][0]
     y4 = contours[3][0][1]
 
+    s1 = x1 + y1
+    s2 = x2 + y2
+    s3 = x3 + y3
+    s4 = x4 + y4
+
+    t = max(s1, s2, s3, s4)
+    if t == s1:
+        x2_main = x1
+        y2_main = y1
+        x1 = 0
+        y1 = 0
+
+    elif t == s2:
+        x2_main = x2
+        y2_main = y2
+        x2 = 0
+        y2 = 0
+
+    elif t == s3:
+        x2_main = x3
+        y2_main = y3
+        x3 = 0
+        y3 = 0
+
+    else:
+        x2_main = x4
+        y2_main = y4
+        x4 = 0
+        y4 = 0
+
+    # print(x2_main, y2_main)
+
+    t = min(s1, s2, s3, s4)
+    if t == s1:
+        x4_main = x1
+        y4_main = y1
+        x1 = 0
+        y1 = 0
+
+    elif t == s2:
+        x4_main = x2
+        y4_main = y2
+        x2 = 0
+        y2 = 0
+
+    elif t == s3:
+        x4_main = x3
+        y4_main = y3
+        x3 = 0
+        y3 = 0
+
+    else:
+        x4_main = x4
+        y4_main = y4
+        x4 = 0
+        y4 = 0
+    # print(x4_main, y4_main)
+
+    t = max(x1, x2, x3, x4)
+    x3_main = t
+    index_min = np.argmax([x1, x2, x3, x4])
+    if index_min == 0:
+        x1 = 0
+    elif index_min == 1:
+        x2 = 0
+    elif index_min == 2:
+        x3 = 0
+    else:
+        x4 = 0
+
+    t = max(x1, x2, x3, x4)
+    x1_main = t
+
+    t = max(y1, y2, y3, y4)
+    y1_main = t
+    index_min = np.argmax([y1, y2, y3, y4])
+    if index_min == 0:
+        y1 = 0
+    elif index_min == 1:
+        y2 = 0
+    elif index_min == 2:
+        y3 = 0
+    else:
+        y4 = 0
+
+    t = max(y1, y2, y3, y4)
+    y3_main = t
+
 
     mask = np.zeros(image.shape, dtype=np.uint8)
-    roi_corners = np.array([[(x1, y1), (x2, y2), (x3, y3), (x4, y4)]], dtype=np.int32)
+    roi_corners = np.array([[(x1_main, y1_main), (x2_main, y2_main), (x3_main, y3_main), (x4_main, y4_main)]], dtype=np.int32)
     channel_count = image.shape[2]
     ignore_mask_color = (255,) * channel_count
     cv2.fillPoly(mask, roi_corners, ignore_mask_color)
     masked_image = cv2.bitwise_and(image, mask)
 
-    pts1 = np.float32([(x3, y3), (x2, y2), (x4, y4), (x1, y1)])
+    pts1 = np.float32([(x3_main, y3_main), (x2_main, y2_main), (x4_main, y4_main), (x1_main, y1_main)])
     pts2 = np.float32([[0, 0], [500, 0], [0, 500], [500, 500]])
     M = cv2.getPerspectiveTransform(pts1, pts2)
     dst = cv2.warpPerspective(masked_image, M, (500, 500))
@@ -274,16 +370,19 @@ def deleteframes(file_name,contours):
 
             filter_top_of_robot(warped_frame)
 
-        # cv2.imshow("Original", image)
-        # cv2.waitKey(1)
+        cv2.imshow("Original", image)
+        cv2.waitKey(1)
 
     cap.release()
     cv2.destroyAllWindows()
     #print("i am out of delete_frames")
     list_step = int(list_circles.__len__()/5)
+    print("List step = " + str(list_step))
+    print("list circle len = " + str(list_circles.__len__()))
     for i in range(0,list_circles.__len__(),list_step):
         list_export.append(list_circles[i])
-        cv2.circle(img_with_circles, (int(list_circles[i][0]), int(list_circles[i][1])), 20, (255, 0, 0), thickness=-1)
+        cv2.circle(img_with_circles, (int(list_circles[i][0]), int(list_circles[i][1])), 20, blue, -1)
+
     cv2.imwrite(name_akaze,img)
     cv2.imwrite(name_circle,img_with_circles)
     cv2.imwrite(name_thick,img_thick)
@@ -298,10 +397,16 @@ def deleteframes(file_name,contours):
 
 ##############################################################################################################################################################
 ##############################################################################################################################################################
-def standard(file_name):
-    csv_file_name = "results_perfect.csv"
+def standard(file_name,width_input):
+    csv_file_name = "Results/results_perfect.csv"
+    if file_name == 0 :
+        return csv_file_name
+
     result_dic = []
     file_name = file_name
+    global width
+    width = int(width_input)
+    print(width)
 
 
     (coordinates) = aruco_coordinates(file_name)
@@ -323,6 +428,20 @@ def standard(file_name):
 
         # writing data rows
         writer.writerows(result_dic)
-    return
 
-#standard('/Users/siddharth/Desktop/EYSIP/NEW VIDS & RESULTS/new_video11.mov')
+    fields = ['Team_ID', 'Plot Path', 'Circle Path', 'Handling Count', "Physical Marker 1 Time",
+              "Physical Marker 2 Time", "Follow Accuracy", 'Programmatic', 'Feature Matching', 'HOG']
+    with open("Results/Results.csv", 'w') as csvfile:
+        # creating a csv dict writer object
+        writer = csv.DictWriter(csvfile, fieldnames=fields)
+
+        # writing headers (field names)
+        writer.writeheader()
+
+        # writing data rows
+
+    return csv_file_name
+
+
+
+#standard('/Users/siddharth/Desktop/EYSIP/NEW VIDS & RESULTS/new_video_final_4.mov',25)
